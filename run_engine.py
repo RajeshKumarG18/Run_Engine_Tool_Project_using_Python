@@ -11,6 +11,8 @@ from automation_hub import run_automation_cycle
 import json
 import time
 from datetime import datetime
+from pathlib import Path
+import sys
 
 def print_banner():
     print("""
@@ -150,9 +152,10 @@ def main():
     print("\n" + "="*70)
     print("SYSTEM EXECUTION COMPLETE")
     print("="*70)
+    python_cmd = Path(sys.executable).name if sys.executable else "python3"
     print(f"\nNext Steps:")
-    print("  1. Run: python attention_arbitrage_engine.py")
-    print("  2. Run: python automation_hub.py")
+    print(f"  1. Run: {python_cmd} attention_arbitrage_engine.py")
+    print(f"  2. Run: {python_cmd} automation_hub.py")
     print("  3. Set up cron jobs for continuous execution")
     print("\n" + "="*70)
 

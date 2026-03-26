@@ -222,7 +222,13 @@ class MicroOfferStack:
     def calculate_stack_value(self) -> Dict:
         """Calculate total potential value of the stack"""
         if not self.active_offers:
-            return {"total_potential": 0, "weighted_avg": 0}
+            return {
+                "total_potential": 0,
+                "average_order_value": 0,
+                "total_conversion_rate": 0,
+                "layer_count": 0,
+                "expected_value_per_visitor": 0
+            }
         
         weighted_sum = sum(
             o["price"] * o["conversion_estimate"] 
@@ -232,7 +238,8 @@ class MicroOfferStack:
         
         return {
             "total_potential": sum(o["price"] for o in self.active_offers),
-            "weighted_avg_conversion": weighted_sum / total_conv if total_conv > 0 else 0,
+            "average_order_value": weighted_sum / total_conv if total_conv > 0 else 0,
+            "total_conversion_rate": total_conv,
             "layer_count": len(self.active_offers),
             "expected_value_per_visitor": weighted_sum
         }
@@ -437,14 +444,18 @@ class FacelessRevenueEngine:
         stack_value = self.offer_stack.calculate_stack_value()
         
         # Calculate expected revenue
-        expected_conversions = visitors * stack_value.get("weighted_avg_conversion", 0.05)
-        expected_revenue = expected_conversions * stack_value.get("weighted_avg_conversion", 15)
+        conversion_rate = stack_value.get("total_conversion_rate", 0.05)
+        average_order_value = stack_value.get("average_order_value", 15)
+        expected_conversions = visitors * conversion_rate
+        expected_revenue = expected_conversions * average_order_value
         
         result = {
             "campaign": campaign_name,
             "visitors": visitors,
+            "conversion_rate": round(conversion_rate, 4),
             "expected_conversions": round(expected_conversions, 1),
             "expected_revenue": round(expected_revenue, 2),
+            "average_order_value": round(average_order_value, 2),
             "top_opportunity": opportunities[0]["source"] if opportunities else "N/A",
             "offer_stack": len(stack),
             "timestamp": datetime.now().isoformat()
@@ -514,6 +525,8 @@ def execute_rapid_monetization():
         print(f"    Price: ${offer['price']} | Conv: {offer['conversion_estimate']*100}%")
     
     print(f"\n  TOTAL STACK VALUE: ${stack_value['total_potential']}")
+    print(f"  TOTAL CONVERSION RATE: {stack_value['total_conversion_rate']*100:.2f}%")
+    print(f"  AVERAGE ORDER VALUE: ${stack_value['average_order_value']:.2f}")
     print(f"  EXPECTED VALUE PER VISITOR: ${stack_value['expected_value_per_visitor']:.2f}")
     
     # Run test campaigns
